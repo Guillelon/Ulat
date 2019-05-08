@@ -1,0 +1,156 @@
+﻿@model GuilleCoin.DAL.UserDTO
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">
+            Wallet
+        </h1>
+    </div>
+</div>
+@if (ViewBag.SuccessMessage != null)
+{
+    <div class="alert alert-success" role="alert">
+        @ViewBag.SuccessMessage
+    </div>
+}
+else if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-warning" role="alert">
+        @ViewBag.ErrorMessage
+    </div>
+}
+<div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                @Model.Name
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-3"></div>
+                    <div class="col-md-6">
+                        <div class="panel panel-primary" style="border:2px solid transparent;border-color: #428bca;text-align:center">
+                            <h4>Balance</h4>
+
+                            <h3>Ǥ @Model.Amount.ToString("N2")</h3>
+                        </div>
+                        <br />
+                        <div style="text-align:center">
+                            <button id="send" class="btn btn-success">Enviar <span class="glyphicon glyphicon-log-out"></span></button>
+                        </div>
+                    </div>
+                    <div class="col-md-3"></div>
+                </div>
+                <hr />
+                <h4>Transacciones</h4>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>
+
+                            </th>
+                            <th>
+                                Fecha
+                            </th>
+                            <th>
+                                Monto
+                            </th>
+                            <th>
+                                Usuario
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var transaction in Model.Transactions)
+                        {
+                            <tr>
+                                <td style="text-align:center">
+                                    @if (transaction.Sender)
+                                    {
+                                        <span class="glyphicon glyphicon-log-out"></span>
+                                    }
+                                    else
+                                    {
+                                        <span class="glyphicon glyphicon-log-in"></span>
+                                    }
+                                </td>
+                                <td>
+                                    @transaction.CreateDate.ToShortDateString()
+                                </td>
+                                <td>
+                                    Ǥ @transaction.Amount.ToString("N2")
+                                </td>
+                                <td>
+                                    @transaction.OtherUser
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3"></div>
+</div>
+
+<div id="modal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Realizar Transacción</h4>
+            </div>
+            <div class="modal-body">
+                <div>
+                    @using (Html.BeginForm("MakeTransaction", "Home", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">
+                                Receptor
+                            </label>
+                            <div class="col-md-10">
+                                @Html.HiddenFor(m => m.Id)
+                                @Html.DropDownListFor(model => model.SelectedUser, Model.AvailableUsers.Select(option => new SelectListItem
+                                {
+                                    Text = Html.DisplayTextFor(_ => option.Name).ToString(),
+                                    Value = option.Id.ToString(),
+                                    Selected = false
+                                }), "Seleccionar receptor", new { @class = "form-control", @id = "franchiseList" })
+                            </div>
+                        </div>
+                        <br />
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">
+                                Monto
+                            </label>
+                            <div class="col-md-10">
+                                @Html.TextBoxFor(m => m.AmountToSend, new { @class = "form-control", @type = "number", @step = "any" })
+                            </div>
+                        </div> <hr />
+                        <div class="form-group">
+                            <div class="col-md-offset-2 col-md-10">
+                                <button type="submit" class="btn btn-success">Guardar</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        var user = localStorage.getItem('user');
+        if (user == null) {
+            window.location.replace("/Home/CreateUser");
+        }
+
+        $('#send').click(function () {
+            $('#modal').modal('show');
+        });
+    });
+
+</script>

@@ -1,0 +1,83 @@
+﻿<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">
+            Transacciones
+        </h1>
+    </div>
+</div>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>
+                Id
+            </th>
+            <th>
+                Date
+            </th>
+            <th>
+                Remitente
+            </th>
+            <th>
+                Monto
+            </th>
+            <th>
+                Receptor
+            </th>
+        </tr>
+    </thead>
+    <tbody data-bind="foreach: Transactions">
+        <tr>
+            <td data-bind="text: Id"></td>
+            <td data-bind="text: CreateDate"></td>
+            <td data-bind="text: Sender"></td>
+            <td data-bind="text: Amount"></td>
+            <td data-bind="text: Receiver"></td>
+        </tr>
+    </tbody>
+</table>
+
+<script>
+    $(document).ready(function () {
+        function TransactionsViewModel() {
+            var self = this;
+            self.Transactions = ko.observableArray();
+
+            function GetTransactions() {
+                console.log('going to the server');
+                $.ajax({
+                    url: '/Home/GetAllTransactions',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        self.Transactions([]);
+                        for (var i = 0; i < data.length; i++) {
+                            var transaction = new Transaction(data[i])
+                            self.Transactions.push(transaction);
+                        }
+                    },
+                    error: function () {
+
+                    },
+                });
+
+                setTimeout(GetTransactions, 4000);
+            }
+            GetTransactions();
+        }
+
+        function Transaction(data) {
+            var self = this;
+            self.Id = ko.observable(data.Id);
+            self.CreateDate = ko.observable(data.CreateDate.split('T')[0]);
+            self.Receiver = ko.observable(data.Receiver);
+            self.Sender = ko.observable(data.Sender);
+            self.Amount = ko.observable(data.Amount);
+            return self;
+        }
+
+        // Activates knockout.js
+        var transactionsViewModel = new TransactionsViewModel();
+        ko.applyBindings(transactionsViewModel);
+    });
+
+</script>
